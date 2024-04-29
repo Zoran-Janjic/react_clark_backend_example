@@ -27,9 +27,9 @@ expressApp.post(
 
       const { id, ...otherAttributes } = event.data;
 
-      if (event.type === "webhook") {
+      if (event.type === "user.created") {
         console.log(`User is ${id} is ${event.type}`);
-        console.log(`Other atrributes int the event ${otherAttributes}`);
+        console.log(`Other attributes int the event ${otherAttributes}`);
       }
 
       res.status(200).json({
