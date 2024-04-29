@@ -61,14 +61,7 @@ DatabaseConnection.connect()
 
             if (event.type === "user.created") {
               console.log(
-                `Event data is: ${
-                  (email_addresses,
-                  first_name,
-                  id,
-                  image_url,
-                  last_name,
-                  profile_image_url)
-                }`
+                `Event data is: Email Addresses: ${email_addresses}, First Name: ${first_name}, ID: ${id}, Image URL: ${image_url}, Last Name: ${last_name}, Profile Image URL: ${profile_image_url}`
               );
             }
 
