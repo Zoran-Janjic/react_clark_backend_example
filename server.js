@@ -4,6 +4,7 @@ import colors from "colors/safe.js";
 import { Webhook } from "svix";
 import bodyParser from "body-parser";
 import DBConnectionClass from "./db/connectDB.js";
+import User from "./models/User.js";
 
 dotenv.config({ path: "./config.env" });
 
@@ -32,12 +33,12 @@ DatabaseConnection.connect()
       expressApp.post(
         "/api/webhooks",
         bodyParser.raw({ type: "application/json" }),
-        (req, res) => {
+        async (req, res) => {
           try {
             const payloadString = req.body.toString();
             const svixHeaders = req.headers;
-
             const WEBHOOK_SECRET = process.env.CLERK_SIGNING_SECRET;
+
             if (!WEBHOOK_SECRET) {
               throw new Error("You need a WEBHOOK_SECRET in your .env");
             }
@@ -48,21 +49,8 @@ DatabaseConnection.connect()
 
             const eventData = event.data;
 
-            const {
-              email_addresses,
-              first_name,
-              id,
-              image_url,
-              last_name,
-              profile_image_url,
-            } = eventData;
-
-            const eventType = event.type;
-
             if (event.type === "user.created") {
-              console.log(
-                `Event data is: Email Addresses: ${email_addresses}, First Name: ${first_name}, ID: ${id}, Image URL: ${image_url}, Last Name: ${last_name}, Profile Image URL: ${profile_image_url}`
-              );
+              await createAndSaveNewUser(eventData);
             }
 
             res.status(200).json({
@@ -70,7 +58,7 @@ DatabaseConnection.connect()
               message: "Webhook verified",
             });
           } catch (error) {
-            console.log(error);
+            console.log(colors.bgYellow.red.bold(`App error ${error.message}`));
             res.status(500).json({
               success: false,
               message: error.message,
@@ -85,3 +73,19 @@ DatabaseConnection.connect()
       colors.bgRed.white.bold(`Error connecting to database: ${err.message}`)
     );
   });
+
+async function createAndSaveNewUser(userData) {
+  const newCreatedUser = new User({
+    email_address: eventData.email_addresses[0].email_address,
+    first_name: eventData.first_name,
+    last_name: eventData.last_name,
+    clerkUserId: eventData.id,
+    image_url: eventData.image_url,
+    username: eventData.username,
+    email_verified: eventData.email_addresses[0].verification.status,
+  });
+
+  await newCreatedUser.save();
+
+  console.log(colors.bgGreen.white.bold(`The new user is: ${newCreatedUser}`));
+}
