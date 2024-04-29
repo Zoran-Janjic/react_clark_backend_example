@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const colors = require("colors/safe");
+import mongoose from "mongoose";
+import colors from "colors/safe.js";
 
 class DBConnectionClass {
   static DBConnectionInstance; // ? Variable to hold the singleton instance
@@ -67,4 +67,4 @@ class DBConnectionClass {
   }
 }
 
-module.exports = DBConnectionClass; // ? Export the DBConnectionClass as a module
+export default DBConnectionClass;

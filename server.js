@@ -1,14 +1,14 @@
 import express from "express";
 import dotenv from "dotenv";
-
+import colors from "colors/safe.js";
 import { Webhook } from "svix";
 import bodyParser from "body-parser";
-import DBConnectionClass from "./db/connectDB";
+import DBConnectionClass from "./db/connectDB.js";
 
 dotenv.config({ path: "./config.env" });
 
 const expressApp = express();
-const port = process.env.PORT || 7000;
+const PORT = process.env.PORT || 7000;
 
 const DatabaseConnection = new DBConnectionClass(
   process.env.ATLAS_DB_DEVELOPMENT_URI,
@@ -22,63 +22,73 @@ process.on("uncaughtException", (err) => {
   process.exit(1);
 });
 
-expressApp.post(
-  "/api/webhooks",
-  bodyParser.raw({ type: "application/json" }),
-  (req, res) => {
-    try {
-      const payloadString = req.body.toString();
-      const svixHeaders = req.headers;
+DatabaseConnection.connect()
+  .then(() =>
+    expressApp.listen(PORT, () => {
+      console.log(
+        colors.bgGreen.white.bold(`App running on port ${PORT}...SERVER.JS`)
+      );
 
-      const WEBHOOK_SECRET = process.env.CLERK_SIGNING_SECRET;
-      if (!WEBHOOK_SECRET) {
-        throw new Error("You need a WEBHOOK_SECRET in your .env");
-      }
+      expressApp.post(
+        "/api/webhooks",
+        bodyParser.raw({ type: "application/json" }),
+        (req, res) => {
+          try {
+            const payloadString = req.body.toString();
+            const svixHeaders = req.headers;
 
-      const webhook = new Webhook(WEBHOOK_SECRET);
+            const WEBHOOK_SECRET = process.env.CLERK_SIGNING_SECRET;
+            if (!WEBHOOK_SECRET) {
+              throw new Error("You need a WEBHOOK_SECRET in your .env");
+            }
 
-      const event = webhook.verify(payloadString, svixHeaders);
+            const webhook = new Webhook(WEBHOOK_SECRET);
 
-      const eventData = event.data;
+            const event = webhook.verify(payloadString, svixHeaders);
 
-      const {
-        email_addresses,
-        first_name,
-        id,
-        image_url,
-        last_name,
-        profile_image_url,
-      } = eventData;
+            const eventData = event.data;
 
-      const eventType = event.type;
+            const {
+              email_addresses,
+              first_name,
+              id,
+              image_url,
+              last_name,
+              profile_image_url,
+            } = eventData;
 
-      if (event.type === "user.created") {
-        console.log(
-          `Event data is: ${
-            (email_addresses,
-            first_name,
-            id,
-            image_url,
-            last_name,
-            profile_image_url)
-          }`
-        );
-      }
+            const eventType = event.type;
 
-      res.status(200).json({
-        success: true,
-        message: "Webhook verified",
-      });
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({
-        success: false,
-        message: error.message,
-      });
-    }
-  }
-);
+            if (event.type === "user.created") {
+              console.log(
+                `Event data is: ${
+                  (email_addresses,
+                  first_name,
+                  id,
+                  image_url,
+                  last_name,
+                  profile_image_url)
+                }`
+              );
+            }
 
-expressApp.listen(port, () => {
-  console.log(`Listening on: ${port}`);
-});
+            res.status(200).json({
+              success: true,
+              message: "Webhook verified",
+            });
+          } catch (error) {
+            console.log(error);
+            res.status(500).json({
+              success: false,
+              message: error.message,
+            });
+          }
+        }
+      );
+    })
+  )
+  .catch((err) => {
+    console.log(
+      colors.bgRed.white.bold(`Error connecting to database: ${err.message}`)
+    );
+  });
