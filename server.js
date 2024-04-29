@@ -3,10 +3,17 @@ import dotenv from "dotenv";
 
 import { Webhook } from "svix";
 import bodyParser from "body-parser";
+import DBConnectionClass from "./db/connectDB";
 
-dotenv.config();
+dotenv.config({ path: "./config.env" });
+
 const expressApp = express();
 const port = process.env.PORT || 7000;
+
+const DatabaseConnection = new DBConnectionClass(
+  process.env.ATLAS_DB_DEVELOPMENT_URI,
+  process.env.ATLAS_DB_DEVELOPMENT_PASSWORD
+);
 
 expressApp.post(
   "/api/webhooks",
@@ -25,6 +32,8 @@ expressApp.post(
 
       const event = webhook.verify(payloadString, svixHeaders);
 
+      const eventData = event.data;
+
       const {
         email_addresses,
         first_name,
@@ -32,7 +41,8 @@ expressApp.post(
         image_url,
         last_name,
         profile_image_url,
-      } = event.data;
+      } = eventData;
+
       const eventType = event.type;
 
       if (event.type === "user.created") {
