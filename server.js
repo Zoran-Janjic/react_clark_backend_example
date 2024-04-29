@@ -25,12 +25,18 @@ expressApp.post(
 
       const event = webhook.verify(payloadString, svixHeaders);
 
-      const evtData = event.data;
+      const {
+        email_addresses,
+        first_name,
+        id,
+        image_url,
+        last_name,
+        profile_image_url,
+      } = event.data;
       const eventType = event.type;
 
       if (event.type === "user.created") {
         console.log(`Event data is: ${evtData}`);
-        console.log(`Event type ${eventType}`);
       }
 
       res.status(200).json({
