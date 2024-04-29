@@ -49,7 +49,7 @@ DatabaseConnection.connect()
 
             if (event.type === "user.created") {
               const eventData = event.data;
-              console.log(`eventData is ${eventData}`);
+              console.log(`eventData is ${eventData.first_name}`);
               await createAndSaveNewUser(eventData);
             }
 
