@@ -76,13 +76,13 @@ DatabaseConnection.connect()
 
 async function createAndSaveNewUser(userData) {
   const newCreatedUser = new User({
-    email_address: eventData.email_addresses[0].email_address,
-    first_name: eventData.first_name,
-    last_name: eventData.last_name,
-    clerkUserId: eventData.id,
-    image_url: eventData.image_url,
-    username: eventData.username,
-    email_verified: eventData.email_addresses[0].verification.status,
+    email_address: userData.email_addresses[0].email_address,
+    first_name: userData.first_name,
+    last_name: userData.last_name,
+    clerkUserId: userData.id,
+    image_url: userData.image_url,
+    username: userData.username,
+    email_verified: userData.email_addresses[0].verification.status,
   });
 
   await newCreatedUser.save();
