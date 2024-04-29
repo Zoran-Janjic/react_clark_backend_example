@@ -47,9 +47,9 @@ DatabaseConnection.connect()
 
             const event = webhook.verify(payloadString, svixHeaders);
 
-            const eventData = event.data;
-
             if (event.type === "user.created") {
+              const eventData = event.data;
+              console.log(`eventData is ${eventData}`);
               await createAndSaveNewUser(eventData);
             }
 
