@@ -15,6 +15,13 @@ const DatabaseConnection = new DBConnectionClass(
   process.env.ATLAS_DB_DEVELOPMENT_PASSWORD
 );
 
+// ? Catch error at startup
+process.on("uncaughtException", (err) => {
+  console.log(`Uncaught error occurred: ${(err.name, err.message)}`);
+  console.log("Shutting down server.");
+  process.exit(1);
+});
+
 expressApp.post(
   "/api/webhooks",
   bodyParser.raw({ type: "application/json" }),
@@ -46,7 +53,16 @@ expressApp.post(
       const eventType = event.type;
 
       if (event.type === "user.created") {
-        console.log(`Event data is: ${evtData}`);
+        console.log(
+          `Event data is: ${
+            (email_addresses,
+            first_name,
+            id,
+            image_url,
+            last_name,
+            profile_image_url)
+          }`
+        );
       }
 
       res.status(200).json({
